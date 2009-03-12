@@ -1,98 +1,51 @@
 package GitStore;
 
-use warnings;
-use strict;
+use Moose;
+
+our $VERSION = '0.01';
+our $AUTHORITY = 'cpan:FAYLAND';
+
+has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
+
+sub BUILDARGS {
+    my $class = shift;
+
+    if ( @_ == 1 && ! ref $_[0] ) {
+        return { repo => $_[0] };
+    } else {
+        return $class->SUPER::BUILDARGS(@_);
+    }
+}
+
+1;
+__END__
 
 =head1 NAME
 
-GitStore - The great new GitStore!
-
-=head1 VERSION
-
-Version 0.01
-
-=cut
-
-our $VERSION = '0.01';
-
+GitStore - Git as versioned data store in Perl
 
 =head1 SYNOPSIS
 
-Quick summary of what the module does.
-
-Perhaps a little code snippet.
-
     use GitStore;
 
-    my $foo = GitStore->new();
-    ...
+    my $store = GitStore->new('/path/to/repo');
+    
 
-=head1 EXPORT
+=head1 DESCRIPTION
 
-A list of functions that can be exported.  You can delete this section
-if you don't export anything, such as for a purely object-oriented module.
+It is inspired by L<http://www.newartisans.com/2008/05/using-git-as-a-versioned-data-store-in-python.html>
 
-=head1 FUNCTIONS
+Python binding - L<http://github.com/jwiegley/git-issues/tree/master>
 
-=head2 function1
+Ruby binding - L<http://github.com/georgi/git_store/tree/master>
 
-=cut
+=head1 Git URL
 
-sub function1 {
-}
-
-=head2 function2
-
-=cut
-
-sub function2 {
-}
+L<http://github.com/fayland/perl-git-store/tree/master>
 
 =head1 AUTHOR
 
 Fayland Lam, C<< <fayland at gmail.com> >>
-
-=head1 BUGS
-
-Please report any bugs or feature requests to C<bug-gitstore at rt.cpan.org>, or through
-the web interface at L<http://rt.cpan.org/NoAuth/ReportBug.html?Queue=GitStore>.  I will be notified, and then you'll
-automatically be notified of progress on your bug as I make changes.
-
-
-
-
-=head1 SUPPORT
-
-You can find documentation for this module with the perldoc command.
-
-    perldoc GitStore
-
-
-You can also look for information at:
-
-=over 4
-
-=item * RT: CPAN's request tracker
-
-L<http://rt.cpan.org/NoAuth/Bugs.html?Dist=GitStore>
-
-=item * AnnoCPAN: Annotated CPAN documentation
-
-L<http://annocpan.org/dist/GitStore>
-
-=item * CPAN Ratings
-
-L<http://cpanratings.perl.org/d/GitStore>
-
-=item * Search CPAN
-
-L<http://search.cpan.org/dist/GitStore/>
-
-=back
-
-
-=head1 ACKNOWLEDGEMENTS
-
 
 =head1 COPYRIGHT & LICENSE
 
@@ -100,8 +53,3 @@ Copyright 2009 Fayland Lam, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
-
-
-=cut
-
-1; # End of GitStore
