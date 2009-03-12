@@ -6,7 +6,7 @@ author   'Fayland Lam <fayland@gmail.com>';
 license  'perl';
 
 requires 'Moose' => '0.56';
-
+requires 'Git::PurePerl' => '0.38';
 
 build_requires 'Test::More';
 
