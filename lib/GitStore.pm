@@ -2,12 +2,16 @@ package GitStore;
 
 use Moose;
 use Git::PurePerl;
+use Data::Dumper;
 
 our $VERSION = '0.01';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
 has 'branch' => ( is => 'rw', isa => 'Str', default => 'master' );
+
+has 'head' => ( is => 'rw', isa => 'Str' );
+has 'root' => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
 
 has 'git_perl' => (
     is => 'ro',
@@ -17,6 +21,13 @@ has 'git_perl' => (
         Git::PurePerl->new( directory =>  shift->repo );
     }
 );
+
+sub BUILD {
+    my $self = shift;
+    
+    $self->load();
+    
+}
 
 sub BUILDARGS {
     my $class = shift;
@@ -28,9 +39,65 @@ sub BUILDARGS {
     }
 }
 
-sub store {
+# Load the current head version from repository. 
+sub load {
     my $self = shift;
     
+    $self->{head} = $self->git_perl->ref_sha1('refs/heads/' . $self->branch);
+    if ( $self->{head} ) {
+        my $commit = $self->git_perl->ref('refs/heads/' . $self->branch);
+        my $root = $self->root;
+        $root->{id} = $commit->tree_sha1;
+        $root->{data} = $commit->content;
+        $root->{tree} = $commit->tree;
+        $self->root($root);
+    }
+}
+
+sub get {
+    my ( $self, $path ) = @_;
+    
+    $path = join('/', @$path) if ref $path eq 'ARRAY';
+    
+    my $tree = $self->root->{tree};
+    my @directory_entries = $tree->directory_entries;
+    foreach my $d ( @directory_entries ) {
+        if ( $d->filename eq $path ) {
+            return $d->object->content;
+        }
+    }
+    return;
+}
+
+sub store {
+    my ( $self, $path, $content ) = @_;
+    
+    $path = join('/', @$path) if ref $path eq 'ARRAY';
+    
+    my $tree = $self->root->{tree};
+    
+    # if exists, delete
+    my @directory_entries = $tree->directory_entries;
+    foreach ( @directory_entries ) {
+        if ( $_->filename ne $path ) {
+            # how to del? 
+        }
+    }
+    @directory_entries = grep { defined $_ } @directory_entries;
+    
+    # then new
+    my $blob = Git::PurePerl::NewObject::Blob->new( content => $content );
+    $self->git_perl->put_object($blob);
+    my $de = Git::PurePerl::NewDirectoryEntry->new(
+        mode     => '100644',
+        filename => $path,
+        sha1     => $blob->sha1,
+    );
+    my $tree2 = Git::PurePerl::NewObject::Tree->new(
+        directory_entries => [$de],
+    );
+    my $commit = Git::PurePerl::NewObject::Commit->new( tree => $tree2->sha1 );
+    $self->git_perl->put_object($commit);
 }
 
 sub commit {
