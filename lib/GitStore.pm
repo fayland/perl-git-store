@@ -12,6 +12,8 @@ has 'branch' => ( is => 'rw', isa => 'Str', default => 'master' );
 
 has 'head' => ( is => 'rw', isa => 'Str' );
 has 'root' => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
+has 'to_add' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
+has 'to_check' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
 
 has 'git_perl' => (
     is => 'ro',
@@ -60,12 +62,22 @@ sub get {
     $path = join('/', @$path) if ref $path eq 'ARRAY';
     
     my $tree = $self->root->{tree};
-    my @directory_entries = $tree->directory_entries;
-    foreach my $d ( @directory_entries ) {
+    if ( $tree ) {
+        my @directory_entries = $tree->directory_entries;
+        foreach my $d ( @directory_entries ) {
+            if ( $d->filename eq $path ) {
+                return $d->object->content;
+            }
+        }
+    }
+    
+    # check to add
+    foreach my $d ( @{$self->to_check} ) {
         if ( $d->filename eq $path ) {
             return $d->object->content;
         }
     }
+    
     return;
 }
 
@@ -73,8 +85,6 @@ sub store {
     my ( $self, $path, $content ) = @_;
     
     $path = join('/', @$path) if ref $path eq 'ARRAY';
-    
-    my $tree = $self->root->{tree};
 
     my $blob = Git::PurePerl::NewObject::Blob->new( content => $content );
     $self->git_perl->put_object($blob);
@@ -83,24 +93,37 @@ sub store {
         filename => $path,
         sha1     => $blob->sha1,
     );
-    my $tree2 = Git::PurePerl::NewObject::Tree->new(
-        directory_entries => [$de],
+
+    push @{$self->{to_add}}, $de;
+    push @{$self->{to_check}}, Git::PurePerl::DirectoryEntry->new(
+        mode => $de->mode, filename => $de->filename, sha1 => $de->sha1,
+        git => $self->git_perl
     );
-    $self->git_perl->put_object($tree2);
-    
-    # how to store $tree2 into $self->root?
 }
 
 sub commit {
     my $self = shift;
     
-    # XXX? need check if changed
-    my $tree = $self->root->{tree};
+    return unless scalar @{$self->{to_add}};
+    
+    my $tree = Git::PurePerl::NewObject::Tree->new(
+        directory_entries => $self->{to_add},
+    );
+    $self->git_perl->put_object($tree);
     my $commit = Git::PurePerl::NewObject::Commit->new( tree => $tree->sha1 );
     $self->git_perl->put_object($commit);
+    
+    # reload
+    $self->load;
 }
 
-
+sub discard {
+    my $self = shift;
+    
+    $self->{to_add} = [];
+    $self->{to_check} = [];
+    $self->load;
+}
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
