@@ -75,17 +75,7 @@ sub store {
     $path = join('/', @$path) if ref $path eq 'ARRAY';
     
     my $tree = $self->root->{tree};
-    
-    # if exists, delete
-    my @directory_entries = $tree->directory_entries;
-    foreach ( @directory_entries ) {
-        if ( $_->filename ne $path ) {
-            # how to del? 
-        }
-    }
-    @directory_entries = grep { defined $_ } @directory_entries;
-    
-    # then new
+
     my $blob = Git::PurePerl::NewObject::Blob->new( content => $content );
     $self->git_perl->put_object($blob);
     my $de = Git::PurePerl::NewDirectoryEntry->new(
