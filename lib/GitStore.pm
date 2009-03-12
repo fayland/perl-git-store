@@ -86,13 +86,18 @@ sub store {
     my $tree2 = Git::PurePerl::NewObject::Tree->new(
         directory_entries => [$de],
     );
-    my $commit = Git::PurePerl::NewObject::Commit->new( tree => $tree2->sha1 );
-    $self->git_perl->put_object($commit);
+    $self->git_perl->put_object($tree2);
+    
+    # how to store $tree2 into $self->root?
 }
 
 sub commit {
     my $self = shift;
     
+    # XXX? need check if changed
+    my $tree = $self->root->{tree};
+    my $commit = Git::PurePerl::NewObject::Commit->new( tree => $tree->sha1 );
+    $self->git_perl->put_object($commit);
 }
 
 
