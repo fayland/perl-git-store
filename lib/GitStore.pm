@@ -2,6 +2,7 @@ package GitStore;
 
 use Moose;
 use Git::PurePerl;
+use Storable qw(nfreeze thaw);
 use Data::Dumper;
 
 our $VERSION = '0.01';
@@ -12,8 +13,7 @@ has 'branch' => ( is => 'rw', isa => 'Str', default => 'master' );
 
 has 'head' => ( is => 'rw', isa => 'Str' );
 has 'root' => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
-has 'to_add' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
-has 'to_check' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
+has 'to_add' => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
 
 has 'git_perl' => (
     is => 'ro',
@@ -48,10 +48,12 @@ sub load {
     $self->{head} = $self->git_perl->ref_sha1('refs/heads/' . $self->branch);
     if ( $self->{head} ) {
         my $commit = $self->git_perl->ref('refs/heads/' . $self->branch);
-        my $root = $self->root;
-        $root->{id} = $commit->tree_sha1;
-        $root->{data} = $commit->content;
-        $root->{tree} = $commit->tree;
+        my $tree = $commit->tree;
+        my @directory_entries = $tree->directory_entries;
+        my $root;
+        foreach my $d ( @directory_entries ) {
+            $root->{ $d->filename } = _cond_thaw( $d->object->content );
+        }
         $self->root($root);
     }
 }
@@ -60,22 +62,12 @@ sub get {
     my ( $self, $path ) = @_;
     
     $path = join('/', @$path) if ref $path eq 'ARRAY';
-    
-    my $tree = $self->root->{tree};
-    if ( $tree ) {
-        my @directory_entries = $tree->directory_entries;
-        foreach my $d ( @directory_entries ) {
-            if ( $d->filename eq $path ) {
-                return $d->object->content;
-            }
-        }
+
+    if ( exists $self->to_add->{ $path } ) {
+        return $self->to_add->{ $path };
     }
-    
-    # check to add
-    foreach my $d ( @{$self->to_check} ) {
-        if ( $d->filename eq $path ) {
-            return $d->object->content;
-        }
+    if ( exists $self->root->{ $path } ) {
+        return $self->root->{ $path };
     }
     
     return;
@@ -86,43 +78,61 @@ sub store {
     
     $path = join('/', @$path) if ref $path eq 'ARRAY';
 
-    my $blob = Git::PurePerl::NewObject::Blob->new( content => $content );
-    $self->git_perl->put_object($blob);
-    my $de = Git::PurePerl::NewDirectoryEntry->new(
-        mode     => '100644',
-        filename => $path,
-        sha1     => $blob->sha1,
-    );
-
-    push @{$self->{to_add}}, $de;
-    push @{$self->{to_check}}, Git::PurePerl::DirectoryEntry->new(
-        mode => $de->mode, filename => $de->filename, sha1 => $de->sha1,
-        git => $self->git_perl
-    );
+    $self->{to_add}->{$path} = $content;
 }
 
 sub commit {
     my $self = shift;
     
-    return unless scalar @{$self->{to_add}};
+    return unless scalar keys %{$self->{to_add}};
     
+    my @directory_entries;
+    foreach my $path ( keys %{$self->{to_add}} ) {
+        my $content = $self->to_add->{$path};
+        $content = nfreeze( $content ) if ( ref $content );
+        my $blob = Git::PurePerl::NewObject::Blob->new( content => $content );
+        $self->git_perl->put_object($blob);
+        my $de = Git::PurePerl::NewDirectoryEntry->new(
+            mode     => '100644',
+            filename => $path,
+            sha1     => $blob->sha1,
+        );
+        push @directory_entries, $de;
+    }
+
     my $tree = Git::PurePerl::NewObject::Tree->new(
-        directory_entries => $self->{to_add},
+        directory_entries => \@directory_entries,
     );
     $self->git_perl->put_object($tree);
     my $commit = Git::PurePerl::NewObject::Commit->new( tree => $tree->sha1 );
     $self->git_perl->put_object($commit);
     
     # reload
+    $self->{to_add} = {};
     $self->load;
 }
 
 sub discard {
     my $self = shift;
     
-    $self->{to_add} = [];
-    $self->{to_check} = [];
+    $self->{to_add} = {};
     $self->load;
+}
+
+sub _cond_thaw {
+    my $data = shift;
+
+    my $magic = eval { Storable::read_magic($data); };
+    if ($magic && $magic->{major} && $magic->{major} >= 2 && $magic->{major} <= 5) {
+        my $thawed = eval { Storable::thaw($data) };
+        if ($@) {
+            # false alarm... looked like a Storable, but wasn't.
+            return $data;
+        }
+        return $thawed;
+    } else {
+        return $data;
+    }
 }
 
 no Moose;
