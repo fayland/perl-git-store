@@ -137,7 +137,7 @@ sub commit {
                 my @entries = grep { $dpath eq $_->filename } @head_directory_entries;
                 my $sha1 = ( scalar @entries ) ? $entries[0]->sha1 : undef;
                 if ( $sha1 ) {
-                    file( $self->git->directory, substr( $sha1, 0, 2 ), substr( $sha1, 2 ) )
+                    file( $self->git->directory, '.git', substr( $sha1, 0, 2 ), substr( $sha1, 2 ) )
                         ->remove(); # just remove the file, and no commit, YYY
                 }
             }
