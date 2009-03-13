@@ -1,0 +1,17 @@
+Changes
+inc/Module/AutoInstall.pm
+inc/Module/Install.pm
+inc/Module/Install/AutoInstall.pm
+inc/Module/Install/Base.pm
+inc/Module/Install/Include.pm
+inc/Module/Install/Metadata.pm
+lib/GitStore.pm
+Makefile.PL
+MANIFEST			This list of files
+META.yml
+README
+t/.gitignore
+t/00-load.t
+t/01-basic.t
+t/02-next.t
+t/pod.t
