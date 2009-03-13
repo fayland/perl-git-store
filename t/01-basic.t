@@ -1,6 +1,6 @@
 #!perl
 
-use Test::More tests => 6;
+use Test::More tests => 8;
 use Git::PurePerl;
 use Path::Class;
 use GitStore;
@@ -34,6 +34,14 @@ is $t, $time;
 my $refval = $gs->get('dir/ref.txt');
 is $refval->{hash}, 1;
 is $refval->{array}, 2;
+
+# after delete
+$gs->delete("$file.txt");
+$t = $gs->get("$file.txt");
+is $t, undef;
+$gs->remove('dir/ref.txt');
+$refval = $gs->get('dir/ref.txt');
+is $refval, undef;
 
 # save for next file, different instance
 $gs->set("committed.txt", 'Yes');
