@@ -1,52 +1,85 @@
-GitStore
+NAME
+    GitStore - Git as versioned data store in Perl
 
-The README is used to introduce the module and provide instructions on
-how to install the module, any machine dependencies it may have (for
-example C compilers and installed libraries) and any other information
-that should be provided before the module is installed.
+SYNOPSIS
+        use GitStore;
 
-A README file is required for CPAN modules since CPAN extracts the README
-file from a module distribution so that people browsing the archive
-can use it to get an idea of the module's uses. It is usually a good idea
-to provide version information here so that people can decide whether
-fixes for the module are worth downloading.
+        my $gs = GitStore->new('/path/to/repo');
+        $gs->store( 'users/obj.txt', $obj );
+        $gs->store( ['config', 'wiki.txt'], { hash_ref => 1 } );
+        $gs->commit();
+        $gs->store( 'yyy/xxx.log', 'Log me' );
+        $gs->discard();
+        
+        # later or in another pl
+        my $val = $gs->get( 'user/obj.txt' ); # $val is the same as $obj
+        my $val = $gs->get( 'config/wiki.txt' ); # $val is { hashref => 1 } );
+        my $val = $gs->get( ['yyy', 'xxx.log' ] ); # $val is undef since discard
 
+DESCRIPTION
+    It is inspired by the Python and Ruby binding. check SEE ALSO
 
-INSTALLATION
+METHODS
+  new
+        GitStore->new('/path/to/repo');
+        GitStore->new( repo => '/path/to/repo', branch => 'mybranch' );
 
-To install this module, run the following commands:
+  store($path, $val)
+        $gs->store( 'yyy/xxx.log', 'Log me' );
+        $gs->store( ['config', 'wiki.txt'], { hash_ref => 1 } );
+        $gs->store( 'users/obj.txt', $obj );
 
-	perl Makefile.PL
-	make
-	make test
-	make install
+    Store $val as a $path file in Git
 
-SUPPORT AND DOCUMENTATION
+    $path can be String or ArrayRef
 
-After installing, you can find documentation for this module with the
-perldoc command.
+    $val can be String or Ref[HashRef|ArrayRef|Ref[Ref]] or blessed Object
 
-    perldoc GitStore
+  get($path)
+        $gs->get( 'user/obj.txt' );
+        $gs->get( ['yyy', 'xxx.log' ] );
 
-You can also look for information at:
+    Get $val from the $path file
 
-    RT, CPAN's request tracker
-        http://rt.cpan.org/NoAuth/Bugs.html?Dist=GitStore
+    $path can be String or ArrayRef
 
-    AnnoCPAN, Annotated CPAN documentation
-        http://annocpan.org/dist/GitStore
+  commit
+        $gs->commit();
 
-    CPAN Ratings
-        http://cpanratings.perl.org/d/GitStore
+    commit the store changes into Git
 
-    Search CPAN
-        http://search.cpan.org/dist/GitStore/
+  discard
+        $gs->discard();
 
+    discard the store changes
 
-COPYRIGHT AND LICENCE
+INSTALL ISSUE NOW
+    It requires the Git::PurePerl master code. you must git clone it from
+    <http://github.com/acme/git-pureperl/tree/master> and install into your
+    local dir.
 
-Copyright (C) 2009 Fayland Lam
+    The version would jump to 0.01 after a new Git::PurePerl release.
 
-This program is free software; you can redistribute it and/or modify it
-under the same terms as Perl itself.
+SEE ALSO
+    Article
+        <http://www.newartisans.com/2008/05/using-git-as-a-versioned-data-st
+        ore-in-python.html>
+
+    Python binding
+        <http://github.com/jwiegley/git-issues/tree/master>
+
+    Ruby binding
+        <http://github.com/georgi/git_store/tree/master>
+
+Git URL
+    <http://github.com/fayland/perl-git-store/tree/master>
+
+AUTHOR
+    Fayland Lam, "<fayland at gmail.com>"
+
+COPYRIGHT & LICENSE
+    Copyright 2009 Fayland Lam, all rights reserved.
+
+    This program is free software; you can redistribute it and/or modify it
+    under the same terms as Perl itself.
 
