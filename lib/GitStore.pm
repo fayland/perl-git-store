@@ -5,7 +5,7 @@ use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 use Data::Dumper;
 
-our $VERSION = '0.01_01';
+our $VERSION = '0.01_02';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
@@ -82,7 +82,7 @@ sub store {
 }
 
 sub commit {
-    my $self = shift;
+    my ( $self, $message ) = @_;
     
     return unless scalar keys %{$self->{to_add}};
     
@@ -104,7 +104,12 @@ sub commit {
         directory_entries => \@directory_entries,
     );
     $self->git_perl->put_object($tree);
-    my $commit = Git::PurePerl::NewObject::Commit->new( tree => $tree->sha1 );
+    
+    my $content = _build_my_content( $tree->sha1, $message || 'Your Comments Here' );
+    my $commit = Git::PurePerl::NewObject::Commit->new(
+        tree => $tree->sha1,
+        content => $content
+    );
     $self->git_perl->put_object($commit);
     
     # reload
@@ -117,6 +122,17 @@ sub discard {
     
     $self->{to_add} = {};
     $self->load;
+}
+
+sub _build_my_content {
+    my ( $tree, $message ) = @_;
+    my $content;
+    $content .= "tree $tree\n";
+    $content .= "author Fayland Lam <fayland\@gmail.com> 1226651274 +0000\n";
+    $content .= "committer Fayland Lam <fayland\@gmail.com> 1226651274 +0000\n";
+    $content .= "\n";
+    $content .= "$message\n";
+    return $content;
 }
 
 sub _cond_thaw {
@@ -197,6 +213,7 @@ $path can be String or ArrayRef
 =head2 commit
 
     $gs->commit();
+    $gs->commit('Your Comments Here');
 
 commit the B<store> changes into Git
 
