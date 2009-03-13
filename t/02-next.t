@@ -1,9 +1,6 @@
 #!perl
 
-use Test::More;# tests => 4;
-BEGIN {
-    plan skip_all => 'Need a new Git::PurePerl in master';
-};
+use Test::More tests => 4;
 use FindBin qw/$Bin/;
 use GitStore;
 use Path::Class;

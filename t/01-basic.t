@@ -1,9 +1,6 @@
 #!perl
 
-use Test::More; #tests => 6;
-BEGIN {
-    plan skip_all => 'Need a new Git::PurePerl in master';
-};
+use Test::More tests => 6;
 use Git::PurePerl;
 use Path::Class;
 use GitStore;
@@ -18,7 +15,7 @@ my $gs = GitStore->new($directory);
 
 my $time = time();
 my $file = rand();
-$gs->store("$file.txt", $time);
+$gs->set("$file.txt", $time);
 my $t = $gs->get("$file.txt");
 is $t, $time;
 
@@ -26,8 +23,8 @@ $gs->discard;
 $t = $gs->get("$file.txt");
 is $t, undef;
 
-$gs->store("$file.txt", $time);
-$gs->store(['dir', 'ref.txt'], { hash => 1, array => 2 } );
+$gs->set("$file.txt", $time);
+$gs->set(['dir', 'ref.txt'], { hash => 1, array => 2 } );
 $t = $gs->get("$file.txt");
 is $t, $time;
 
@@ -39,9 +36,9 @@ is $refval->{hash}, 1;
 is $refval->{array}, 2;
 
 # save for next file, different instance
-$gs->store("committed.txt", 'Yes');
-$gs->store("gitobj.txt", $gitobj );
+$gs->set("committed.txt", 'Yes');
+$gs->set("gitobj.txt", $gitobj );
 $gs->commit;
-$gs->store("not_committed.txt", 'No');
+$gs->set("not_committed.txt", 'No');
 
 1;

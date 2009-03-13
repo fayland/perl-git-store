@@ -73,7 +73,7 @@ sub get {
     return;
 }
 
-sub store {
+sub set {
     my ( $self, $path, $content ) = @_;
     
     $path = join('/', @$path) if ref $path eq 'ARRAY';
@@ -166,10 +166,10 @@ GitStore - Git as versioned data store in Perl
     use GitStore;
 
     my $gs = GitStore->new('/path/to/repo');
-    $gs->store( 'users/obj.txt', $obj );
-    $gs->store( ['config', 'wiki.txt'], { hash_ref => 1 } );
+    $gs->set( 'users/obj.txt', $obj );
+    $gs->set( ['config', 'wiki.txt'], { hash_ref => 1 } );
     $gs->commit();
-    $gs->store( 'yyy/xxx.log', 'Log me' );
+    $gs->set( 'yyy/xxx.log', 'Log me' );
     $gs->discard();
     
     # later or in another pl
@@ -189,11 +189,11 @@ It is inspired by the Python and Ruby binding. check SEE ALSO
     GitStore->new('/path/to/repo');
     GitStore->new( repo => '/path/to/repo', branch => 'mybranch' );
 
-=head2 store($path, $val)
+=head2 set($path, $val)
 
-    $gs->store( 'yyy/xxx.log', 'Log me' );
-    $gs->store( ['config', 'wiki.txt'], { hash_ref => 1 } );
-    $gs->store( 'users/obj.txt', $obj );
+    $gs->set( 'yyy/xxx.log', 'Log me' );
+    $gs->set( ['config', 'wiki.txt'], { hash_ref => 1 } );
+    $gs->set( 'users/obj.txt', $obj );
 
 Store $val as a $path file in Git
 
@@ -215,13 +215,13 @@ $path can be String or ArrayRef
     $gs->commit();
     $gs->commit('Your Comments Here');
 
-commit the B<store> changes into Git
+commit the B<set> changes into Git
 
 =head2 discard
 
     $gs->discard();
 
-discard the B<store> changes
+discard the B<set> changes
 
 =head1 INSTALL ISSUE NOW
 
