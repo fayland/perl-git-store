@@ -1,6 +1,9 @@
 #!perl
 
-use Test::More tests => 6;
+use Test::More; #tests => 6;
+BEGIN {
+    plan skip_all => 'Need a new Git::PurePerl in master';
+};
 use Git::PurePerl;
 use Path::Class;
 use GitStore;
