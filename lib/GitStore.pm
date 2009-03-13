@@ -5,7 +5,7 @@ use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 use Data::Dumper;
 
-our $VERSION = '0.01';
+our $VERSION = '0.01_01';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
@@ -150,27 +150,85 @@ GitStore - Git as versioned data store in Perl
     use GitStore;
 
     my $gs = GitStore->new('/path/to/repo');
-    $gs->store( 'users/matthias.yml', $obj );
-    $gs->store( ['config', 'wiki.yml'], { hash_ref => 1 } );
-    $gs->commit( 'your commit info here' );
+    $gs->store( 'users/obj.txt', $obj );
+    $gs->store( ['config', 'wiki.txt'], { hash_ref => 1 } );
+    $gs->commit();
+    $gs->store( 'yyy/xxx.log', 'Log me' );
+    $gs->discard();
+    
+    # later or in another pl
+    my $val = $gs->get( 'user/obj.txt' ); # $val is the same as $obj
+    my $val = $gs->get( 'config/wiki.txt' ); # $val is { hashref => 1 } );
+    my $val = $gs->get( ['yyy', 'xxx.log' ] ); # $val is undef since discard
+    
 
 =head1 DESCRIPTION
 
-It is inspired by L<http://www.newartisans.com/2008/05/using-git-as-a-versioned-data-store-in-python.html>
-
-Python binding - L<http://github.com/jwiegley/git-issues/tree/master>
-
-Ruby binding - L<http://github.com/georgi/git_store/tree/master>
-
-This module is mainly a port of the Ruby binding.
+It is inspired by the Python and Ruby binding. check SEE ALSO
 
 =head1 METHODS
 
 =head2 new
 
-=head2 store
+    GitStore->new('/path/to/repo');
+    GitStore->new( repo => '/path/to/repo', branch => 'mybranch' );
+
+=head2 store($path, $val)
+
+    $gs->store( 'yyy/xxx.log', 'Log me' );
+    $gs->store( ['config', 'wiki.txt'], { hash_ref => 1 } );
+    $gs->store( 'users/obj.txt', $obj );
+
+Store $val as a $path file in Git
+
+$path can be String or ArrayRef
+
+$val can be String or Ref[HashRef|ArrayRef|Ref[Ref]] or blessed Object
+
+=head2 get($path)
+
+    $gs->get( 'user/obj.txt' );
+    $gs->get( ['yyy', 'xxx.log' ] );
+
+Get $val from the $path file
+
+$path can be String or ArrayRef
 
 =head2 commit
+
+    $gs->commit();
+
+commit the B<store> changes into Git
+
+=head2 discard
+
+    $gs->discard();
+
+discard the B<store> changes
+
+=head1 INSTALL ISSUE NOW
+
+It requires the Git::PurePerl master code. you must git clone it from L<http://github.com/acme/git-pureperl/tree/master> and install into your local dir.
+
+The version would jump to 0.01 after a new L<Git::PurePerl> release.
+
+=head1 SEE ALSO
+
+=over 4
+
+=item Article
+
+L<http://www.newartisans.com/2008/05/using-git-as-a-versioned-data-store-in-python.html>
+
+=item Python binding
+
+L<http://github.com/jwiegley/git-issues/tree/master>
+
+=item Ruby binding
+
+L<http://github.com/georgi/git_store/tree/master>
+
+=back
 
 =head1 Git URL
 

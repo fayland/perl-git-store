@@ -24,14 +24,14 @@ $t = $gs->get("$file.txt");
 is $t, undef;
 
 $gs->store("$file.txt", $time);
-$gs->store('ref.txt', { hash => 1, array => 2 } );
+$gs->store(['dir', 'ref.txt'], { hash => 1, array => 2 } );
 $t = $gs->get("$file.txt");
 is $t, $time;
 
 $gs->commit;
 $t = $gs->get("$file.txt");
 is $t, $time;
-my $refval = $gs->get('ref.txt');
+my $refval = $gs->get('dir/ref.txt');
 is $refval->{hash}, 1;
 is $refval->{array}, 2;
 
