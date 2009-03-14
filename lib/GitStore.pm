@@ -5,7 +5,7 @@ use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 use Path::Class;
 
-our $VERSION = '0.01';
+our $VERSION = '0.02';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );

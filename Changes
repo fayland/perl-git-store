@@ -1,5 +1,8 @@
 Revision history for GitStore
 
+0.02	2009.3.14
+        fix broken CPAN dist
+
 0.01    2009.3.14
         First version, released on an unsuspecting world.
 
