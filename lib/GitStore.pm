@@ -3,7 +3,6 @@ package GitStore;
 use Moose;
 use Git::PurePerl;
 use Storable qw(nfreeze thaw);
-use Path::Class;
 
 our $VERSION = '0.03';
 our $AUTHORITY = 'cpan:FAYLAND';
@@ -52,9 +51,8 @@ sub load {
         my $tree = $commit->tree;
         my @directory_entries = $tree->directory_entries;
         $self->head_directory_entries(\@directory_entries); # for delete
-        my $root;
+        my $root = {};
         foreach my $d ( @directory_entries ) {
-            next unless $d->object;
             $root->{ $d->filename } = _cond_thaw( $d->object->content );
         }
         $self->root($root);
@@ -99,9 +97,20 @@ sub commit {
     my ( $self, $message ) = @_;
     
     return unless ( scalar keys %{$self->{to_add}} or scalar @{$self->to_delete} );
-    
-    # for add
-    my @directory_entries;
+
+    my @new_de;
+    my @directory_entries = @{ $self->head_directory_entries };
+    # remove those need deleted or added
+    foreach my $d ( @directory_entries ) {
+        next if ( grep { $d->filename eq $_ } @{ $self->to_delete } );
+        next if ( grep { $d->filename eq $_ } keys %{ $self->to_add } );
+        push @new_de, Git::PurePerl::NewDirectoryEntry->new(
+            mode     => '100644',
+            filename => $d->filename,
+            sha1     => $d->sha1,
+        );;
+    }
+    # for add those new
     foreach my $path ( keys %{$self->{to_add}} ) {
         my $content = $self->to_add->{$path};
         $content = nfreeze( $content ) if ( ref $content );
@@ -112,38 +121,22 @@ sub commit {
             filename => $path,
             sha1     => $blob->sha1,
         );
-        push @directory_entries, $de;
-    }
-    if ( scalar @directory_entries ) {
-        my $tree = Git::PurePerl::NewObject::Tree->new(
-            directory_entries => \@directory_entries,
-        );
-        $self->git->put_object($tree);
-        
-        my $content = _build_my_content( $tree->sha1, $message || 'Your Comments Here' );
-        my $commit = Git::PurePerl::NewObject::Commit->new(
-            tree => $tree->sha1,
-            content => $content
-        );
-        $self->git->put_object($commit);
+        push @new_de, $de;
     }
     
-    # for delete
-    my @head_directory_entries = @{ $self->head_directory_entries };
-    if ( scalar @head_directory_entries ) {
-        foreach my $dpath ( @{ $self->to_delete } ) {
-            if ( exists $self->root->{$dpath} ) {
-                # get the directory_entry
-                my @entries = grep { $dpath eq $_->filename } @head_directory_entries;
-                my $sha1 = ( scalar @entries ) ? $entries[0]->sha1 : undef;
-                if ( $sha1 ) {
-                    file( $self->git->directory, '.git', 'objects', substr( $sha1, 0, 2 ), substr( $sha1, 2 ) )
-                        ->remove(); # just remove the file, and no commit, YYY
-                }
-            }
-        }
-    }
+    # commit
+    my $tree = Git::PurePerl::NewObject::Tree->new(
+        directory_entries => \@new_de,
+    );
+    $self->git->put_object($tree);
     
+    my $content = _build_my_content( $tree->sha1, $message || 'Your Comments Here' );
+    my $commit = Git::PurePerl::NewObject::Commit->new(
+        tree => $tree->sha1,
+        content => $content
+    );
+    $self->git->put_object($commit);
+
     # reload
     $self->{to_add} = {};
     $self->{to_delete} = [];

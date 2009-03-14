@@ -21,6 +21,7 @@ is dir($gitobj->directory)->as_foreign('Unix'), dir($directory)->as_foreign('Uni
 
 # for 03-next-next.t
 $gs->delete("committed.txt");
+$gs->set("committed2.txt", 'Yes');
 $gs->commit();
 
 1;
