@@ -5,13 +5,12 @@ use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 use Path::Class;
 
-our $VERSION = '0.02';
+our $VERSION = '0.03';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
 has 'branch' => ( is => 'rw', isa => 'Str', default => 'master' );
 
-has 'head' => ( is => 'rw', isa => 'Str' );
 has 'head_directory_entries' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
 has 'root' => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
 has 'to_add' => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
@@ -47,9 +46,9 @@ sub BUILDARGS {
 sub load {
     my $self = shift;
     
-    $self->{head} = $self->git->ref_sha1('refs/heads/' . $self->branch);
-    if ( $self->{head} ) {
-        my $commit = $self->git->ref('refs/heads/' . $self->branch);
+    my $head = $self->git->ref_sha1('refs/heads/' . $self->branch);
+    if ( $head ) {
+        my $commit = $self->git->get_object($head);
         my $tree = $commit->tree;
         my @directory_entries = $tree->directory_entries;
         $self->head_directory_entries(\@directory_entries); # for delete
