@@ -5,13 +5,13 @@ SYNOPSIS
         use GitStore;
 
         my $gs = GitStore->new('/path/to/repo');
-        $gs->store( 'users/obj.txt', $obj );
-        $gs->store( ['config', 'wiki.txt'], { hash_ref => 1 } );
+        $gs->set( 'users/obj.txt', $obj );
+        $gs->set( ['config', 'wiki.txt'], { hash_ref => 1 } );
         $gs->commit();
-        $gs->store( 'yyy/xxx.log', 'Log me' );
+        $gs->set( 'yyy/xxx.log', 'Log me' );
         $gs->discard();
         
-        # later or in another pl
+    # later or in another pl
         my $val = $gs->get( 'user/obj.txt' ); # $val is the same as $obj
         my $val = $gs->get( 'config/wiki.txt' ); # $val is { hashref => 1 } );
         my $val = $gs->get( ['yyy', 'xxx.log' ] ); # $val is undef since discard
@@ -24,10 +24,10 @@ METHODS
         GitStore->new('/path/to/repo');
         GitStore->new( repo => '/path/to/repo', branch => 'mybranch' );
 
-  store($path, $val)
-        $gs->store( 'yyy/xxx.log', 'Log me' );
-        $gs->store( ['config', 'wiki.txt'], { hash_ref => 1 } );
-        $gs->store( 'users/obj.txt', $obj );
+  set($path, $val)
+        $gs->set( 'yyy/xxx.log', 'Log me' );
+        $gs->set( ['config', 'wiki.txt'], { hash_ref => 1 } );
+        $gs->set( 'users/obj.txt', $obj );
 
     Store $val as a $path file in Git
 
@@ -43,22 +43,20 @@ METHODS
 
     $path can be String or ArrayRef
 
+  delete($path)
+  remove($path)
+    remove $path from Git store
+
   commit
         $gs->commit();
+        $gs->commit('Your Comments Here');
 
-    commit the store changes into Git
+    commit the set changes into Git
 
   discard
         $gs->discard();
 
-    discard the store changes
-
-INSTALL ISSUE NOW
-    It requires the Git::PurePerl master code. you must git clone it from
-    <http://github.com/acme/git-pureperl/tree/master> and install into your
-    local dir.
-
-    The version would jump to 0.01 after a new Git::PurePerl release.
+    discard the set changes
 
 SEE ALSO
     Article
