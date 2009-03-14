@@ -55,6 +55,7 @@ sub load {
         $self->head_directory_entries(\@directory_entries); # for delete
         my $root;
         foreach my $d ( @directory_entries ) {
+            next unless $d->object;
             $root->{ $d->filename } = _cond_thaw( $d->object->content );
         }
         $self->root($root);
