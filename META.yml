@@ -1,0 +1,24 @@
+---
+abstract: 'Git as versioned data store in Perl'
+author:
+  - 'Fayland Lam <fayland@gmail.com>'
+build_requires:
+  Test::More: 0
+distribution_type: module
+generated_by: 'Module::Install version 0.790'
+license: perl
+meta-spec:
+  url: http://module-build.sourceforge.net/META-spec-v1.4.html
+  version: 1.4
+name: GitStore
+no_index:
+  directory:
+    - inc
+    - t
+requires:
+  Git::PurePerl: 0.40
+  Moose: 0.56
+  Storable: 2.18
+resources:
+  license: http://dev.perl.org/licenses/
+version: 0.01

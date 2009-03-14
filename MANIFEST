@@ -14,4 +14,5 @@ t/.gitignore
 t/00-load.t
 t/01-basic.t
 t/02-next.t
+t/03-next-next.t
 t/pod.t
