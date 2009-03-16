@@ -23,6 +23,16 @@ METHODS
   new
         GitStore->new('/path/to/repo');
         GitStore->new( repo => '/path/to/repo', branch => 'mybranch' );
+        GitStore->new( repo => '/path/to/repo', author => 'Someone Unknown <unknown\@what.com>' );
+
+    repo
+        your git dir (without .git)
+
+    branch
+        your branch name, default is 'master'
+
+    author
+        It is used in the commit info
 
   set($path, $val)
         $gs->set( 'yyy/xxx.log', 'Log me' );
