@@ -1,5 +1,8 @@
 Revision history for GitStore
 
+0.05
+        fix commit date by time()
+
 0.04    2009.3.16
         FAQ doc
 

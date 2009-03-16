@@ -4,7 +4,7 @@ use Moose;
 use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 
-our $VERSION = '0.04';
+our $VERSION = '0.05';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
@@ -153,10 +153,13 @@ sub discard {
 
 sub _build_my_content {
     my ( $tree, $message ) = @_;
+    
+    my $time = time();
+    
     my $content;
     $content .= "tree $tree\n";
-    $content .= "author Fayland Lam <fayland\@gmail.com> 1226651274 +0000\n";
-    $content .= "committer Fayland Lam <fayland\@gmail.com> 1226651274 +0000\n";
+    $content .= "author Fayland Lam <fayland\@gmail.com> $time +0000\n";
+    $content .= "committer Fayland Lam <fayland\@gmail.com> $time +0000\n";
     $content .= "\n";
     $content .= "$message\n";
     return $content;
