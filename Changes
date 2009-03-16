@@ -1,5 +1,8 @@
 Revision history for GitStore
 
+0.04    2009.3.16
+        FAQ doc
+
 0.03    2009.3.14
         big bug fix because I used Git::PurePerl wrong, thanks for acme
 

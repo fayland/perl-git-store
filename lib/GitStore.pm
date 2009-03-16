@@ -4,7 +4,7 @@ use Moose;
 use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 
-our $VERSION = '0.03';
+our $VERSION = '0.04';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
@@ -255,6 +255,32 @@ commit the B<set> changes into Git
     $gs->discard();
 
 discard the B<set> changes
+
+=head1 FAQ
+
+=head2 why the files are B<not> there?
+
+run
+
+    git checkout
+
+=head2 any example?
+
+    # if you just need a local repo, that's all you need.
+    mkdir sandbox
+    cd sandbox
+    git init
+    # use GitStore->new('/path/to/this/sandbox')
+    # set something
+    git checkout
+    
+    # follows are for remote git url
+    git remote add origin git@github.com:fayland/sandbox2.git
+    git push origin master
+    # do more GitStore->new('/path/to/this/sandbox') later
+    git checkout
+    git pull origin master
+    git push
 
 =head1 SEE ALSO
 
