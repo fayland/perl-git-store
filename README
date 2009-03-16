@@ -58,6 +58,29 @@ METHODS
 
     discard the set changes
 
+FAQ
+  why the files are not there?
+    run
+
+        git checkout
+
+  any example?
+        # if you just need a local repo, that's all you need.
+        mkdir sandbox
+        cd sandbox
+        git init
+        # use GitStore->new('/path/to/this/sandbox')
+        # set something
+        git checkout
+        
+    # follows are for remote git url
+        git remote add origin git@github.com:fayland/sandbox2.git
+        git push origin master
+        # do more GitStore->new('/path/to/this/sandbox') later
+        git checkout
+        git pull origin master
+        git push
+
 SEE ALSO
     Article
         <http://www.newartisans.com/2008/05/using-git-as-a-versioned-data-st
