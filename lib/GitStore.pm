@@ -4,11 +4,12 @@ use Moose;
 use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 
-our $VERSION = '0.03';
+our $VERSION = '0.05';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
 has 'branch' => ( is => 'rw', isa => 'Str', default => 'master' );
+has 'author' => ( is => 'rw', isa => 'Str', default => 'Fayland Lam <fayland\@gmail.com>' );
 
 has 'head_directory_entries' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
 has 'root' => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
@@ -130,7 +131,7 @@ sub commit {
     );
     $self->git->put_object($tree);
     
-    my $content = _build_my_content( $tree->sha1, $message || 'Your Comments Here' );
+    my $content = $self->_build_my_content( $tree->sha1, $message || 'Your Comments Here' );
     my $commit = Git::PurePerl::NewObject::Commit->new(
         tree => $tree->sha1,
         content => $content
@@ -152,11 +153,15 @@ sub discard {
 }
 
 sub _build_my_content {
-    my ( $tree, $message ) = @_;
+    my ( $self, $tree, $message ) = @_;
+    
+    my $author = $self->author;
+    my $time = time();
+    
     my $content;
     $content .= "tree $tree\n";
-    $content .= "author Fayland Lam <fayland\@gmail.com> 1226651274 +0000\n";
-    $content .= "committer Fayland Lam <fayland\@gmail.com> 1226651274 +0000\n";
+    $content .= "author $author $time +0000\n";
+    $content .= "committer $author $time +0000\n";
     $content .= "\n";
     $content .= "$message\n";
     return $content;
@@ -215,6 +220,23 @@ It is inspired by the Python and Ruby binding. check SEE ALSO
 
     GitStore->new('/path/to/repo');
     GitStore->new( repo => '/path/to/repo', branch => 'mybranch' );
+    GitStore->new( repo => '/path/to/repo', author => 'Someone Unknown <unknown\@what.com>' );
+
+=over 4
+
+=item repo
+
+your git dir (without .git)
+
+=item branch
+
+your branch name, default is 'master'
+
+=item author
+
+It is used in the commit info
+
+=back
 
 =head2 set($path, $val)
 
@@ -255,6 +277,32 @@ commit the B<set> changes into Git
     $gs->discard();
 
 discard the B<set> changes
+
+=head1 FAQ
+
+=head2 why the files are B<not> there?
+
+run
+
+    git checkout
+
+=head2 any example?
+
+    # if you just need a local repo, that's all you need.
+    mkdir sandbox
+    cd sandbox
+    git init
+    # use GitStore->new('/path/to/this/sandbox')
+    # set something
+    git checkout
+    
+    # follows are for remote git url
+    git remote add origin git@github.com:fayland/sandbox2.git
+    git push origin master
+    # do more GitStore->new('/path/to/this/sandbox') later
+    git checkout
+    git pull origin master
+    git push
 
 =head1 SEE ALSO
 
