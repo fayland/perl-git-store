@@ -1,15 +1,35 @@
 package GitStore;
 
 use Moose;
+use Moose::Util::TypeConstraints;
 use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 
 our $VERSION = '0.05';
 our $AUTHORITY = 'cpan:FAYLAND';
 
+subtype 'PurePerlActor' =>
+    as 'Git::PurePerl::Actor';
+
+coerce PurePerlActor 
+    => from 'Str'
+    => via { 
+    s/<(.*?)>//;
+    Git::PurePerl::Actor->new( name => $_, email => $1 );
+};
+
 has 'repo' => ( is => 'ro', isa => 'Str', required => 1 );
 has 'branch' => ( is => 'rw', isa => 'Str', default => 'master' );
-has 'author' => ( is => 'rw', isa => 'Str', default => 'Fayland Lam <fayland\@gmail.com>' );
+has author => ( 
+    is => 'rw', 
+    isa => 'PurePerlActor',  
+    default => sub { 
+        Git::PurePerl::Actor->new( 
+            name => 'anonymous', 
+            email => 'anon@127.0.0.1' 
+        );
+} );
+
 
 has 'head_directory_entries' => ( is => 'rw', isa => 'ArrayRef', default => sub { [] } );
 has 'root' => ( is => 'rw', isa => 'HashRef', default => sub { {} } );
@@ -134,7 +154,12 @@ sub commit {
     my $content = $self->_build_my_content( $tree->sha1, $message || 'Your Comments Here' );
     my $commit = Git::PurePerl::NewObject::Commit->new(
         tree => $tree->sha1,
-        content => $content
+        content => $content,
+        author => $self->author,
+        committer => $self->author,
+        comment => '',
+        authored_time  => DateTime->now,
+        committed_time => DateTime->now,
     );
     $self->git->put_object($commit);
 
@@ -155,7 +180,7 @@ sub discard {
 sub _build_my_content {
     my ( $self, $tree, $message ) = @_;
     
-    my $author = $self->author;
+    my $author = $self->author->name . " <" . $self->author->email . ">";
     my $time = time();
     
     my $content;
