@@ -1,5 +1,9 @@
 Revision history for GitStore
 
+0.06    2010.3.3
+        Change the way author is handled to work with new version
+            of Git::PurePerl::NewObject::Commit.
+
 0.05    2009.3.16
         fix commit date by time()
         fix commit author/committer by configurable author

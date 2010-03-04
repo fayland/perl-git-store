@@ -5,7 +5,7 @@ use Moose::Util::TypeConstraints;
 use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 
-our $VERSION = '0.05';
+our $VERSION = '0.06';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 subtype 'PurePerlActor' =>
@@ -25,7 +25,7 @@ has author => (
     isa => 'PurePerlActor',  
     default => sub { 
         Git::PurePerl::Actor->new( 
-            name => 'anonymous', 
+            name  => 'anonymous', 
             email => 'anon@127.0.0.1' 
         );
 } );
@@ -355,9 +355,11 @@ L<http://github.com/fayland/perl-git-store/tree/master>
 
 Fayland Lam, C<< <fayland at gmail.com> >>
 
+Itsy bitsy contribution by Yanick Champoux, C<< <yanick@cpan.org> >>
+
 =head1 COPYRIGHT & LICENSE
 
-Copyright 2009 Fayland Lam, all rights reserved.
+Copyright 2009, 2010 Fayland Lam, all rights reserved.
 
 This program is free software; you can redistribute it and/or modify it
 under the same terms as Perl itself.
