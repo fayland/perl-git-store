@@ -1,5 +1,8 @@
 Revision history for GitStore
 
+0.07    2010.7.23
+        * fix the commits such that they don't clobber their branch anymore. 
+
 0.06    2010.3.3
         Change the way author is handled to work with new version
             of Git::PurePerl::NewObject::Commit.

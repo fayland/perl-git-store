@@ -3,9 +3,12 @@ abstract: 'Git as versioned data store in Perl'
 author:
   - 'Fayland Lam <fayland@gmail.com>'
 build_requires:
+  ExtUtils::MakeMaker: 6.42
   Test::More: 0
+configure_requires:
+  ExtUtils::MakeMaker: 6.42
 distribution_type: module
-generated_by: 'Module::Install version 0.790'
+generated_by: 'Module::Install version 0.91'
 license: perl
 meta-spec:
   url: http://module-build.sourceforge.net/META-spec-v1.4.html
@@ -16,9 +19,10 @@ no_index:
     - inc
     - t
 requires:
-  Git::PurePerl: 0.40
+  Git::PurePerl: 0.41
   Moose: 0.56
   Storable: 2.18
 resources:
   license: http://dev.perl.org/licenses/
-version: 0.05
+  repository: http://github.com/fayland/perl-git-store/tree/master
+version: 0.06
