@@ -5,6 +5,8 @@ use Moose::Util::TypeConstraints;
 use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 
+no warnings qw/ uninitialized /;
+
 our $VERSION = '0.06';
 our $AUTHORITY = 'cpan:FAYLAND';
 
@@ -151,13 +153,16 @@ sub commit {
     );
     $self->git->put_object($tree);
     
-    my $content = $self->_build_my_content( $tree->sha1, $message || 'Your Comments Here' );
+    # there might not be a parent, if it's a new branch
+    my $parent = eval { $self->git->ref( 'refs/heads/'.$self->branch )->sha1 };
+
     my $commit = Git::PurePerl::NewObject::Commit->new(
+        ( parent => $parent ) x !!$parent,
         tree => $tree->sha1,
-        content => $content,
+        #content => $content,
         author => $self->author,
         committer => $self->author,
-        comment => '',
+        comment => $message||'',
         authored_time  => DateTime->now,
         committed_time => DateTime->now,
     );
@@ -175,21 +180,6 @@ sub discard {
     $self->{to_add} = {};
     $self->{to_delete} = [];
     $self->load;
-}
-
-sub _build_my_content {
-    my ( $self, $tree, $message ) = @_;
-    
-    my $author = $self->author->name . " <" . $self->author->email . ">";
-    my $time = time();
-    
-    my $content;
-    $content .= "tree $tree\n";
-    $content .= "author $author $time +0000\n";
-    $content .= "committer $author $time +0000\n";
-    $content .= "\n";
-    $content .= "$message\n";
-    return $content;
 }
 
 sub _cond_thaw {
