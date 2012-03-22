@@ -41,7 +41,9 @@ has 'git' => (
     isa => 'Git::PurePerl',
     lazy => 1,
     default => sub {
-        Git::PurePerl->new( directory =>  shift->repo );
+        my $repo = shift->repo;
+        return Git::PurePerl->new( gitdir => $repo ) if $repo =~ m/\.git$/;
+        return Git::PurePerl->new( directory => $repo );
     }
 );
 
