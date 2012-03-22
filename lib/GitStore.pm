@@ -153,6 +153,7 @@ sub commit {
     );
     $self->git->put_object($tree);
     
+    my $timestamp = DateTime->now;
     my $content = $self->_build_my_content( $tree->sha1, $message || 'Your Comments Here' );
     my $commit = Git::PurePerl::NewObject::Commit->new(
         tree => $tree->sha1,
@@ -160,8 +161,8 @@ sub commit {
         author => $self->author,
         committer => $self->author,
         comment => '',
-        authored_time  => DateTime->now,
-        committed_time => DateTime->now,
+        authored_time  => $timestamp,
+        committed_time => $timestamp,
     );
     $self->git->put_object($commit);
 
