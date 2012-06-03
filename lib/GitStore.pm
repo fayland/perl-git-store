@@ -43,7 +43,9 @@ has 'git' => (
     isa => 'Git::PurePerl',
     lazy => 1,
     default => sub {
-        Git::PurePerl->new( directory =>  shift->repo );
+        my $repo = shift->repo;
+        return Git::PurePerl->new( gitdir => $repo ) if $repo =~ m/\.git$/;
+        return Git::PurePerl->new( directory => $repo );
     }
 );
 
@@ -156,6 +158,8 @@ sub commit {
     # there might not be a parent, if it's a new branch
     my $parent = eval { $self->git->ref( 'refs/heads/'.$self->branch )->sha1 };
 
+    my $timestamp = DateTime->now;
+    my $content = $self->_build_my_content( $tree->sha1, $message || 'Your Comments Here' );
     my $commit = Git::PurePerl::NewObject::Commit->new(
         ( parent => $parent ) x !!$parent,
         tree => $tree->sha1,
@@ -163,8 +167,8 @@ sub commit {
         author => $self->author,
         committer => $self->author,
         comment => $message||'',
-        authored_time  => DateTime->now,
-        committed_time => DateTime->now,
+        authored_time  => $timestamp,
+        committed_time => $timestamp,
     );
     $self->git->put_object($commit);
 
