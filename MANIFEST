@@ -1,4 +1,8 @@
 Changes
+MANIFEST
+META.yml
+Makefile.PL
+README
 inc/Module/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoInstall.pm
@@ -11,13 +15,9 @@ inc/Module/Install/Metadata.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/GitStore.pm
-Makefile.PL
-MANIFEST			This list of files
-META.yml
-README
-t/.gitignore
 t/00-load.t
 t/01-basic.t
 t/02-next.t
 t/03-next-next.t
+t/many-commits.t
 t/pod.t
