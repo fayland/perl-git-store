@@ -21,8 +21,6 @@ Represents an object in a  L<GitStore> at a specific commit.
 
 =cut
 
-use 5.10.0;
-
 use strict;
 use warnings;
 
