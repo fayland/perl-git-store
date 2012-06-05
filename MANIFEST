@@ -1,4 +1,14 @@
+Build.PL
 Changes
+INSTALL
+LICENSE
+MANIFEST
+META.json
+META.yml
+Makefile.PL
+README
+README.mkdn
+SIGNATURE
 inc/Module/AutoInstall.pm
 inc/Module/Install.pm
 inc/Module/Install/AutoInstall.pm
@@ -11,13 +21,13 @@ inc/Module/Install/Metadata.pm
 inc/Module/Install/Win32.pm
 inc/Module/Install/WriteAll.pm
 lib/GitStore.pm
-Makefile.PL
-MANIFEST			This list of files
-META.yml
-README
-t/.gitignore
+lib/GitStore/Revision.pm
+t/00-compile.t
 t/00-load.t
+t/000-report-versions.t
 t/01-basic.t
 t/02-next.t
 t/03-next-next.t
+t/history.t
+t/many-commits.t
 t/pod.t

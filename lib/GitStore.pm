@@ -5,7 +5,9 @@ use Moose::Util::TypeConstraints;
 use Git::PurePerl;
 use Storable qw(nfreeze thaw);
 
-our $VERSION = '0.06';
+no warnings qw/ uninitialized /;
+
+our $VERSION = '0.07';
 our $AUTHORITY = 'cpan:FAYLAND';
 
 subtype 'PurePerlActor' =>
@@ -41,10 +43,25 @@ has 'git' => (
     isa => 'Git::PurePerl',
     lazy => 1,
     default => sub {
-        my $repo = shift->repo;
-        return Git::PurePerl->new( gitdir => $repo ) if $repo =~ m/\.git$/;
-        return Git::PurePerl->new( directory => $repo );
+        my $repo = $_[0]->repo;
+        return Git::PurePerl->new( 
+            ( $repo =~ m/\.git$/ ? 'gitdir' : 'directory') => $repo 
+        );
     }
+);
+
+# TODO use Git::PurePerl attribute instead
+has 'git_repo' => (
+    is => 'ro',
+    isa => 'Git::Repository',
+    lazy => 1,
+    default => sub {
+        require Git::Repository;
+        my $repo = shift->repo;
+        return Git::Repository->new(
+            ( $repo =~ m/\.git$/ ? 'git_dir' : 'work_tree') => $repo 
+        )
+    },
 );
 
 sub BUILD {
@@ -153,14 +170,16 @@ sub commit {
     );
     $self->git->put_object($tree);
     
+    # there might not be a parent, if it's a new branch
+    my $parent = eval { $self->git->ref( 'refs/heads/'.$self->branch )->sha1 };
+
     my $timestamp = DateTime->now;
-    my $content = $self->_build_my_content( $tree->sha1, $message || 'Your Comments Here' );
     my $commit = Git::PurePerl::NewObject::Commit->new(
+        ( parent => $parent ) x !!$parent,
         tree => $tree->sha1,
-        content => $content,
         author => $self->author,
         committer => $self->author,
-        comment => '',
+        comment => $message||'',
         authored_time  => $timestamp,
         committed_time => $timestamp,
     );
@@ -180,21 +199,6 @@ sub discard {
     $self->load;
 }
 
-sub _build_my_content {
-    my ( $self, $tree, $message ) = @_;
-    
-    my $author = $self->author->name . " <" . $self->author->email . ">";
-    my $time = time();
-    
-    my $content;
-    $content .= "tree $tree\n";
-    $content .= "author $author $time +0000\n";
-    $content .= "committer $author $time +0000\n";
-    $content .= "\n";
-    $content .= "$message\n";
-    return $content;
-}
-
 sub _cond_thaw {
     my $data = shift;
 
@@ -210,6 +214,20 @@ sub _cond_thaw {
         return $data;
     }
 }
+
+sub history {
+    my ( $self, $path ) = @_;
+
+    require GitStore::Revision;
+
+    return reverse map { GitStore::Revision->new( 
+                    path => $path, 
+                    commit => $_,
+                    gitstore => $self,
+                ) } 
+               $self->git_repo->run( 'log', '--pretty=format:%H', '--', $path );
+}
+
 
 no Moose;
 __PACKAGE__->meta->make_immutable;
@@ -305,6 +323,12 @@ commit the B<set> changes into Git
     $gs->discard();
 
 discard the B<set> changes
+
+=head2 history($path)
+
+Returns a list of L<GitStore::Revision> objects representing the changes
+brought to the I<$path>. The changes are returned in ascending commit order.
+
 
 =head1 FAQ
 
